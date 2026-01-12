@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+*.yaml
+keys.yaml
+data/files/*
+data/training_files/*
+data/topic_wiki_files/*
+
+!data/files/.gitkeep
+!data/wiki_files/.gitkeep
+!data/training_files/.gitkeep
+!data/topic_wiki_files/.gitkeep
+!data/topic_wiki_files/.gitkeep
+
+tutorialbank/
+*.Zone.Identifier

@@ -1,0 +1,64 @@
+{
+  "id": "string",
+  "profile": {
+    "name": "string",
+    "age": "integer",
+    "registration_date": "date"
+  },
+  "knowledge_state": [
+    {
+      "concept_id": "string",
+      "mastery_score": 0.5,
+      "last_updated": "datetime"
+    }
+  ],
+  "behavior": {
+    "content_interactions": [
+      {
+        "content_id": "string",
+        "timestamp": "datetime",
+        "duration_seconds": 120,
+        "completed": true,
+        "engagement_score": 0.88
+      }
+    ],
+    "session_history": [
+      {
+        "session_id": "string",
+        "start_time": "datetime",
+        "end_time": "datetime",
+        "actions": [
+          {
+            "action_type": "page_view",
+            "metadata": {}
+          }
+        ]
+      }
+    ]
+  },
+  "preferences": {
+    "content_type_preferences": [
+      {
+        "type": "video",
+        "score": 0.84,
+        "confidence": 0.71
+      }
+    ],
+    "topic_interests": [
+      {
+        "topic_id": "string",
+        "interest_score": 0.65
+      }
+    ],
+    "difficulty_preference": "medium"
+  },
+  "affective_state": [
+    {
+      "timestamp": "datetime",
+      "frustration": 0.2,
+      "confusion": 0.1,
+      "boredom": 0.3,
+      "engagement": 0.85
+    }
+  ]
+}
