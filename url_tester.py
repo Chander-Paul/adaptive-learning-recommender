@@ -1,6 +1,12 @@
 """
 A module to test URLs and suggest alternatives using Google Custom Search API."""
 
+
+
+###
+##Reminder Add test for content requiring a subscription. 
+
+####
 import requests
 import yaml
 from googleapiclient.discovery import build

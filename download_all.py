@@ -17,7 +17,7 @@ import csv
 
 count = 0
 data = []
-with open("TB-Paper/data/resources.csv", "r") as resources:
+with open("data/resources.csv", "r") as resources:
     reader = csv.reader(resources)
     next(reader)
     for row in reader:

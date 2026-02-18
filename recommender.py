@@ -4,11 +4,14 @@ to recommend learning resources based on learner's knowledge state.
 Uses real prerequisite data from TutorialBank dataset.
 """
 
+import json
+import os
+from typing import Any, Optional
+
 import pandas as pd
 import numpy as np
-
-
 from mvl_elo import MultiVariateEloTopicMastery
+from learning_mode_predictor import LearningModePredictor
 
 
 class ContentBasedRecommender:
@@ -242,6 +245,300 @@ class ContentBasedRecommender:
             explanation += f"\n\nTo better prepare, consider strengthening: {', '.join(skills_list)}. "
         
         return explanation
+
+
+class ScenarioRecommenderEngine:
+    """
+    Unified recommender that combines skill readiness, learning mode prediction,
+    and multi-view learner profile recommendations.
+    """
+
+    def __init__(
+        self,
+        content_recommender: Optional[ContentBasedRecommender] = None,
+        mode_predictor: Optional[LearningModePredictor] = None,
+        multiview_profiles_path: str = 'visualizations/multiview_student_profiles.csv',
+        multiview_recommendations_path: str = 'visualizations/multiview_recommendations.json',
+        learning_paths_path: str = 'visualizations/learning_paths.json'
+    ):
+        self.content_recommender = content_recommender or ContentBasedRecommender()
+        self.mode_predictor = mode_predictor or LearningModePredictor()
+        self.mode_model_loaded = False
+        self.multiview_profiles_path = multiview_profiles_path
+        self.multiview_recommendations_path = multiview_recommendations_path
+        self.learning_paths_path = learning_paths_path
+        self._multiview_profiles_df = None
+        self._multiview_recommendations = None
+        self._learning_paths = None
+
+    def recommend_for_scenario(self, scenario: dict[str, Any], top_n: int = 10) -> dict[str, Any]:
+        """
+        Generate recommendations based on a user scenario.
+
+        scenario can include:
+        - skills: dict[str, float]
+        - learner_model: LearnerModel instance (optional)
+        - recent_actions: list of [action, item_id] pairs or dicts with action/item_id
+        - profile: dict of learner attributes (StudyHours, Attendance, etc.)
+        - cluster_id or learning_path_cluster: output from personalized_learner_model
+        - preferences: dict with optional filters (mediums, min_year, max_year)
+        - target_topic: str for learning path
+        """
+        learner_skills = self._extract_skills(scenario)
+        learning_mode = self._predict_learning_mode(scenario.get('recent_actions', []))
+        readiness_range = self._readiness_range_for_mode(learning_mode.get('predicted_mode'))
+
+        recommendations = self.content_recommender.recommend(
+            learner_skills,
+            top_n=top_n,
+            min_readiness=readiness_range['min'],
+            max_readiness=readiness_range['max']
+        )
+
+        recommendations = self._apply_preferences(recommendations, scenario.get('preferences', {}))
+        recommendations = self._apply_cluster_ranking(recommendations, scenario)
+
+        profile_info = self._infer_profile_recommendations(scenario.get('profile', {}))
+
+        learning_path = []
+        target_topic = scenario.get('target_topic')
+        if target_topic:
+            learning_path = self.content_recommender.get_learning_path(
+                learner_skills,
+                target_topic=target_topic,
+                path_length=5
+            )
+
+        return {
+            'learning_mode': learning_mode,
+            'profile': profile_info,
+            'content_recommendations': recommendations,
+            'learning_path': learning_path
+        }
+
+    def _extract_skills(self, scenario: dict[str, Any]) -> dict[str, float]:
+        learner_model = scenario.get('learner_model')
+        if learner_model is not None and hasattr(learner_model, 'get_all_skills'):
+            return learner_model.get_all_skills()
+        return scenario.get('skills', {})
+
+    def _predict_learning_mode(self, recent_actions: list[Any]) -> dict[str, Any]:
+        if not recent_actions:
+            return {'predicted_mode': 'todays_recommendation', 'confidence': 0.0, 'all_predictions': []}
+
+        action_history = self._normalize_action_history(recent_actions)
+        if not action_history:
+            return {'predicted_mode': 'todays_recommendation', 'confidence': 0.0, 'all_predictions': []}
+
+        if not self.mode_model_loaded:
+            self._try_load_mode_model()
+
+        if self.mode_model_loaded:
+            try:
+                return self.mode_predictor.predict_from_action_names(action_history)
+            except Exception:
+                return self._fallback_learning_mode(action_history)
+
+        return self._fallback_learning_mode(action_history)
+
+    def _try_load_mode_model(self) -> None:
+        try:
+            self.mode_predictor.load_trained_model()
+            self.mode_model_loaded = True
+        except Exception:
+            self.mode_model_loaded = False
+
+    def _normalize_action_history(self, recent_actions: list[Any]) -> list[list[str]]:
+        normalized: list[list[str]] = []
+        for entry in recent_actions:
+            if isinstance(entry, (list, tuple)) and len(entry) >= 2:
+                normalized.append([str(entry[0]), str(entry[1])])
+            elif isinstance(entry, dict):
+                action = entry.get('action') or entry.get('action_type')
+                item_id = entry.get('item_id') or entry.get('item')
+                if action and item_id:
+                    normalized.append([str(action), str(item_id)])
+        return normalized
+
+    def _fallback_learning_mode(self, action_history: list[list[str]]) -> dict[str, Any]:
+        actions = [a[0] for a in action_history]
+        item_ids = [a[1] for a in action_history]
+        respond_count = sum(1 for a in actions if 'respond' in a)
+        quit_count = sum(1 for a in actions if 'quit' in a)
+        video_count = sum(1 for i in item_ids if 'l' in i)
+        audio_count = sum(1 for a in actions if 'play_audio' in a)
+
+        if respond_count >= 3 and quit_count >= 1:
+            mode = 'adaptive_offer'
+        elif video_count + audio_count >= 3:
+            mode = 'archive'
+        else:
+            mode = 'todays_recommendation'
+
+        return {'predicted_mode': mode, 'confidence': 0.0, 'all_predictions': []}
+
+    def _readiness_range_for_mode(self, mode: Optional[str]) -> dict[str, float]:
+        mode = mode or 'todays_recommendation'
+        ranges = {
+            'sprint': {'min': 0.6, 'max': 0.85},
+            'adaptive_offer': {'min': 0.45, 'max': 0.75},
+            'archive': {'min': 0.3, 'max': 0.95},
+            'todays_recommendation': {'min': 0.5, 'max': 0.85},
+            'diagnosis': {'min': 0.4, 'max': 0.8}
+        }
+        return ranges.get(mode, ranges['todays_recommendation'])
+
+    def _apply_preferences(self, recommendations: list[dict], preferences: dict[str, Any]) -> list[dict]:
+        if not recommendations:
+            return recommendations
+
+        mediums = preferences.get('mediums')
+        min_year = preferences.get('min_year')
+        max_year = preferences.get('max_year')
+
+        filtered = recommendations
+        if mediums:
+            filtered = [r for r in filtered if str(r.get('medium', '')).lower() in {m.lower() for m in mediums}]
+        if min_year is not None:
+            filtered = [r for r in filtered if pd.notna(r.get('year')) and int(r['year']) >= int(min_year)]
+        if max_year is not None:
+            filtered = [r for r in filtered if pd.notna(r.get('year')) and int(r['year']) <= int(max_year)]
+
+        return filtered or recommendations
+
+    def _apply_cluster_ranking(self, recommendations: list[dict], scenario: dict[str, Any]) -> list[dict]:
+        if not recommendations:
+            return recommendations
+
+        cluster_id = scenario.get('learning_path_cluster') or scenario.get('cluster_id')
+        if cluster_id is None:
+            return recommendations
+
+        self._load_learning_paths()
+        if not self._learning_paths:
+            return recommendations
+
+        cluster_info = self._learning_paths.get(str(cluster_id))
+        if not cluster_info:
+            return recommendations
+
+        target_center = self._readiness_center_for_cluster(cluster_info.get('Type', ''))
+        for rec in recommendations:
+            readiness = float(rec.get('readiness_score', 0.0))
+            rec['cluster_score'] = 1.0 - abs(readiness - target_center)
+
+        recommendations.sort(
+            key=lambda r: (r.get('cluster_score', 0.0), 1.0 - abs(r.get('readiness_score', 0.0) - 0.7)),
+            reverse=True
+        )
+
+        return recommendations
+
+    def _load_learning_paths(self) -> None:
+        if self._learning_paths is not None:
+            return
+        if not os.path.exists(self.learning_paths_path):
+            self._learning_paths = {}
+            return
+        with open(self.learning_paths_path, 'r', encoding='utf-8') as f:
+            self._learning_paths = json.load(f)
+
+    def _readiness_center_for_cluster(self, cluster_type: str) -> float:
+        cluster_type = cluster_type.upper()
+        if 'HIGH ACHIEVERS' in cluster_type:
+            return 0.8
+        if 'STRUGGLING HARD WORKERS' in cluster_type:
+            return 0.55
+        if 'DISENGAGED LEARNERS' in cluster_type:
+            return 0.5
+        if 'CONSISTENT PERFORMERS' in cluster_type:
+            return 0.7
+        return 0.65
+
+    def _infer_profile_recommendations(self, profile: dict[str, Any]) -> dict[str, Any]:
+        if not profile:
+            return {}
+
+        self._load_multiview_recommendations()
+        if not self._multiview_recommendations:
+            return {}
+
+        composite = self._infer_composite_profile(profile)
+        if not composite:
+            return {}
+
+        recs = self._multiview_recommendations.get(composite, {})
+        if not recs:
+            return {}
+
+        return {
+            'composite_profile': composite,
+            'learning_style': recs.get('LearningStyle'),
+            'performance': recs.get('Performance'),
+            'affective': recs.get('Affective'),
+            'recommendations': recs.get('Recommendations', [])
+        }
+
+    def _load_multiview_recommendations(self) -> None:
+        if self._multiview_recommendations is not None:
+            return
+        if not os.path.exists(self.multiview_recommendations_path):
+            self._multiview_recommendations = {}
+            return
+        with open(self.multiview_recommendations_path, 'r', encoding='utf-8') as f:
+            self._multiview_recommendations = json.load(f)
+
+    def _infer_composite_profile(self, profile: dict[str, Any]) -> Optional[str]:
+        if 'Composite_Profile' in profile:
+            return str(profile['Composite_Profile'])
+
+        if all(k in profile for k in ['LearningStyle_Cluster', 'Performance_Cluster', 'Affective_Cluster']):
+            return f"{profile['LearningStyle_Cluster']}_{profile['Performance_Cluster']}_{profile['Affective_Cluster']}"
+
+        self._load_multiview_profiles()
+        if self._multiview_profiles_df is None or self._multiview_profiles_df.empty:
+            return None
+
+        return self._nearest_profile_match(profile)
+
+    def _load_multiview_profiles(self) -> None:
+        if self._multiview_profiles_df is not None:
+            return
+        if not os.path.exists(self.multiview_profiles_path):
+            self._multiview_profiles_df = pd.DataFrame()
+            return
+        self._multiview_profiles_df = pd.read_csv(self.multiview_profiles_path)
+
+    def _nearest_profile_match(self, profile: dict[str, Any]) -> Optional[str]:
+        df = self._multiview_profiles_df
+        if df is None or df.empty:
+            return None
+
+        available_cols = [c for c in profile.keys() if c in df.columns]
+        if not available_cols:
+            return None
+
+        numeric_cols = [c for c in available_cols if pd.api.types.is_numeric_dtype(df[c])]
+        categorical_cols = [c for c in available_cols if c not in numeric_cols]
+
+        best_score = None
+        best_profile = None
+
+        for _, row in df.iterrows():
+            score = 0.0
+            for col in numeric_cols:
+                try:
+                    score += abs(float(profile[col]) - float(row[col]))
+                except Exception:
+                    continue
+            for col in categorical_cols:
+                score += 0.0 if str(profile[col]) == str(row[col]) else 1.0
+
+            if best_score is None or score < best_score:
+                best_score = score
+                best_profile = row.get('Composite_Profile')
+
+        return str(best_profile) if best_profile is not None else None
 
 
 
