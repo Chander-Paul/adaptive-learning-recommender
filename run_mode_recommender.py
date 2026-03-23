@@ -6,12 +6,12 @@ import argparse
 import json
 from typing import Any
 
-from learning_mode_predictor import LearningModePredictor
-from learner_type_recommender import ResourceRecommender
-import recommender
+from models.learner.learning_mode_predictor import LearningModePredictor
+from recommender import ResourceRecommender
+import recommender_prototype
 
 
-def _load_json_arg(value: str, label: str) -> Any:
+def load_json_arg(value: str, label: str) -> Any:
     try:
         return json.loads(value)
     except json.JSONDecodeError as exc:
@@ -19,7 +19,7 @@ def _load_json_arg(value: str, label: str) -> Any:
 
 def recommend_from_interaction(recent_actions: str, profile_json: str, top_n: int = 5, query: str = None) -> list[dict[str, Any]]:
     
-    profile = _load_json_arg(profile_json, "profile-json") if profile_json else {}
+    profile = load_json_arg(profile_json, "profile-json") if profile_json else {}
 
     predictor = LearningModePredictor()
     predictor.load_trained_model()
@@ -33,7 +33,6 @@ def recommend_from_interaction(recent_actions: str, profile_json: str, top_n: in
     return recommendations
     
 
-if __name__ == "__main__":
 def main() -> None:
     parser = argparse.ArgumentParser(description="Predict learning mode and recommend resources.")
     parser.add_argument("--actions-json", type=str, help="JSON list of [action, item_id] pairs")
@@ -43,7 +42,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.actions_json:
-        recent_actions = _load_json_arg(args.actions_json, "actions-json")
+        recent_actions = load_json_arg(args.actions_json, "actions-json")
     else:
         recent_actions = [
             ["enter", "l1"],
@@ -53,7 +52,7 @@ def main() -> None:
             ["quit", "l2"],
         ]
 
-    profile = _load_json_arg(args.profile_json, "profile-json") if args.profile_json else {}
+    profile = load_json_arg(args.profile_json, "profile-json") if args.profile_json else {}
 
     predictor = LearningModePredictor()
     predictor.load_trained_model()

@@ -28,3 +28,44 @@ EduTech – Usage of educational technology tools/platforms.
 StressLevel – Self-reported stress level (numeric scale).
 FinalGrade – Final course grade (target variable for prediction).
 
+
+Rune file instructions with Make
+
+``` make reset-db``` Reset database initialisation
+
+```make run-api``` Run api server with connection to database.
+
+```./.venv/bin/python scripts/populate_content_database.py --map-resource-types``` Seed content using the README resource-type mapping.
+
+# Resources.
+
+### Types of Resources
+
+Survey     -> resource
+Library    -> resource
+Resource
+Tutorial   ->resource
+resources   -> resource
+naclo       -> assignment
+course      -> resource
+corpus      -> resource
+lecture     -> resource
+paper       -> resources
+Course      -> resources
+corpora     -> resources
+Corpora     -> resources
+Surveys     -> resources
+Libraries   -> resources
+Resources   -> resources
+Tutorials   -> resources
+NACLO Problems  -> assignments
+Lectures        -> resources
+Papers          -> resources
+Other           -> resources
+Books           -> resources
+book            -> resources
+
+1
+
+
+
