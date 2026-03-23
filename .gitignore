@@ -3,15 +3,28 @@ __pycache__/
 .venv/
 *.yaml
 keys.yaml
+ITEM_TYPE_UPDATE.md
+quick_reference_item_types.md
+ACTION_PREDICTION_README.md
+example_learning_mode.py
 data/files/*
+data/url/*
 data/training_files/*
 data/topic_wiki_files/*
-
+data/*.tsv
+data/*.csv
+embeddings/*
 !data/files/.gitkeep
 !data/wiki_files/.gitkeep
 !data/training_files/.gitkeep
 !data/topic_wiki_files/.gitkeep
 !data/topic_wiki_files/.gitkeep
+visualizations/
+tests/
+models/
+!models/*py .gitkeep
 
 tutorialbank/
 *.Zone.Identifier
+CROSS_ENCODER_GUIDE.md
+ltr_personalization_reranker.py
