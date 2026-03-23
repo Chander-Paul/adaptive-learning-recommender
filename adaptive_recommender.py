@@ -4,14 +4,30 @@ Based on the prediction it will limit the recommender to types of resources that
 for the learner's current situation.
 
 """
+from pathlib import Path
 from typing import Any
 
 from models.learner.learning_mode_predictor import LearningModePredictor
 from recommender import ResourceRecommender
+
+
 class AdaptiveRecommender:
-    def __init__(self):
+    model_path: str | None = None
+
+    def __init__(self, model_path: str = "models/learning_mode_lstm_model.keras"):
+        project_root = Path(__file__).resolve().parent
+        resolved_model_path = Path(model_path)
+        if not resolved_model_path.is_absolute():
+            resolved_model_path = (project_root / resolved_model_path).resolve()
+
+        self.model_path = str(resolved_model_path)
+        encoders_path = str((project_root / "models/learning_mode_encoders.pkl").resolve())
+
         self.predictor = LearningModePredictor()
-        self.predictor.load_trained_model()
+        self.predictor.load_trained_model(
+            model_path=self.model_path,
+            encoders_path=encoders_path,
+        )
         self.recommender = ResourceRecommender()
 
     def recommend(self, profile=None, recent_actions: list[tuple[str, str]] = None,
@@ -26,17 +42,18 @@ class AdaptiveRecommender:
         if predicted_mode == 'sprint':
             filters.append({"key": "type", "value": "resource"})
         elif predicted_mode == 'assignment':
-            filters.append({"key": "type", "value": "assignments"}) ##exercise is a better term than assignments
+            filters.append({"key": "type", "value": "assignment"}) ##exercise is a better term than assignments
         elif predicted_mode == 'instructional_material':
-            filters.append({"key": "type", "value": "resources"})
+            filters.append({"key": "type", "value": "resource"})
         elif predicted_mode == 'adaptive_offer':
-            filters.append({"key": "type", "value": "resources"})
+            filters.append({"key": "type", "value": "resource"})
         elif predicted_mode == 'todays_recommendation':
-            filters.append({"key": "type", "value": "resources"})
+            filters.append({"key": "type", "value": "resource"})
 
         # Call the recommender with the appropriate filters
         if triggered_resource and trigger_content_id:
-            recommendations = self.recommender.recommend(profile, top_n=top_n, filter=filters, similar_to_content_id=trigger_content_id)
+            recommendations = self.recommender.recommend(profile, top_n=top_n, filter=filters, 
+                                                         similar_to_content_id=trigger_content_id)
         else:
             recommendations = self.recommender.recommend(profile, top_n=top_n, filter=filters)
         
