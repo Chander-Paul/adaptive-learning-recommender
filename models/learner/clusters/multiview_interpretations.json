@@ -1,0 +1,85 @@
+{
+  "style": {
+    "0": {
+      "Style": "Traditional Learner",
+      "Description": "Follows conventional learning approaches",
+      "Size": 4417,
+      "Percentage": "31.5%"
+    },
+    "1": {
+      "Style": "Traditional Learner",
+      "Description": "Follows conventional learning approaches",
+      "Size": 2699,
+      "Percentage": "19.3%"
+    },
+    "2": {
+      "Style": "Traditional Learner",
+      "Description": "Follows conventional learning approaches",
+      "Size": 2183,
+      "Percentage": "15.6%"
+    },
+    "3": {
+      "Style": "Digital Self-Learner",
+      "Description": "Prefers online courses and technology-enhanced learning",
+      "Size": 4704,
+      "Percentage": "33.6%"
+    }
+  },
+  "performance": {
+    "0": {
+      "Level": "Struggling Performer",
+      "Description": "Needs academic support and intervention",
+      "Avg_ExamScore": "54.1",
+      "Avg_Assignment": "62.5",
+      "Size": 3682,
+      "Percentage": "26.3%"
+    },
+    "1": {
+      "Level": "Moderate Performer",
+      "Description": "Average academic performance with room for growth",
+      "Avg_ExamScore": "84.9",
+      "Avg_Assignment": "62.1",
+      "Size": 3589,
+      "Percentage": "25.6%"
+    },
+    "2": {
+      "Level": "Struggling Performer",
+      "Description": "Needs academic support and intervention",
+      "Avg_ExamScore": "56.5",
+      "Avg_Assignment": "88.0",
+      "Size": 3405,
+      "Percentage": "24.3%"
+    },
+    "3": {
+      "Level": "High Performer",
+      "Description": "Consistently strong academic performance",
+      "Avg_ExamScore": "86.8",
+      "Avg_Assignment": "87.3",
+      "Size": 3327,
+      "Percentage": "23.8%"
+    }
+  },
+  "affective": {
+    "0": {
+      "Level": "Moderately Engaged",
+      "Description": "Decent affective with some variability",
+      "Avg_Attendance": "70.0%",
+      "Size": 4278,
+      "Percentage": "30.6%"
+    },
+    "1": {
+      "Level": "Highly Engaged",
+      "Description": "Strong attendance and motivation",
+      "Avg_Attendance": "90.8%",
+      "Size": 5813,
+      "Percentage": "41.5%"
+    },
+    "2": {
+      "Level": "Moderately Engaged",
+      "Description": "Decent affective with some variability",
+      "Avg_Attendance": "75.6%",
+      "Size": 3912,
+      "Percentage": "27.9%"
+    }
+  }
+}

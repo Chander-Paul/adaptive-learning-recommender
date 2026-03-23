@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
+from typing import Any
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 
 try:
     from .db_models import Content, ContentInteractions, LearnerModels, Topic, db
@@ -11,11 +12,51 @@ except ImportError:  # pragma: no cover - fallback for direct script-style execu
 def register_routes(app: Flask) -> None:
     """Attach CLI and API routes to the Flask app instance."""
 
+    # Instantiated once at startup so model weights are not reloaded per-request.
+    import sys, pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+    from recommender import ResourceRecommender
+    from adaptive_recommender import AdaptiveRecommender
+    from models.learner.learner_model import LearnerModel, ContentInteraction
+
+    resource_recommender = ResourceRecommender()
+
+    ### Adaptive Resource Recommender suddenly stopped working when loaded from the API. Works when loaded from tests.
+    ### Gives errors when attempting to load model details. 
+    #adaptive_recommender = AdaptiveRecommender(model_path="models/learning_mode_lstm_model.keras")
+
+    def build_learner_model(payload: dict[str, Any]) -> LearnerModel:
+        """Reconstruct a LearnerModel from a request payload."""
+        profile = LearnerModel(
+            learner_id=str(payload["learner_id"]),
+            name=payload.get("learner_name", ""),
+        )
+        for raw in payload.get("interactions", []):
+            profile.log_content_interaction(
+                ContentInteraction(
+                    content_id=str(raw["content_id"]),
+                    topic_id=raw.get("topic_id"),
+                    timestamp=raw.get("timestamp"),
+                    duration_seconds=int(raw.get("duration_seconds", 0)),
+                    completed=bool(raw.get("completed", False)),
+                    performance_score=raw.get("performance_score"),
+                    engagement_score=raw.get("engagement_score"),
+                    feedback=raw.get("feedback"),
+                )
+            )
+        return profile
+
     @app.cli.command("init-db")
     def init_db_command() -> None:
         with app.app_context():
             db.create_all()
         print("Database initialized.")
+
+    @app.get("/")
+    def recommender_spa() -> str:
+        return render_template("recommender_spa.html")
+
+
 
     @app.post("/0")
     def create_interaction():
@@ -157,5 +198,88 @@ def register_routes(app: Flask) -> None:
     def list_content():
         content_items = db.session.query(Content).all()
         return jsonify([{"id": content.id, "content_id": content.content_id, "title": content.title} for content in content_items])
+
+    @app.post("/recommend")
+    def get_recommendations():
+        """
+        Get recommendations for a learner.
+
+        Expected JSON body:
+        {
+            "learner_id": "1",
+            "learner_name": "Jane Doe",          // optional
+            "interactions": [                     // optional – recent content history
+                {
+                    "content_id": "11",
+                    "topic_id": "1",              // optional
+                    "timestamp": "2024-01-01T10:00:00Z",
+                    "duration_seconds": 300,
+                    "feedback": 4,
+                    "completed": false
+                }
+            ],
+            "top_n": 10,                          // optional, default 10
+            "query": "...",                       // optional – free-text search
+            "filter": [{"key": "type", "value": "resource"}],  // optional
+            "similar_to_content_id": "11"         // optional – 'more like this'
+        }
+        """
+        payload = request.get_json(silent=True) or {}
+
+        if "learner_id" not in payload:
+            return jsonify({"error": "learner_id is required"}), 400
+
+        profile = build_learner_model(payload)
+
+        results = resource_recommender.recommend(
+            profile=profile,
+            top_n=int(payload.get("top_n", 10)),
+            query=payload.get("query"),
+            filter=payload.get("filter"),
+            similar_to_content_id=payload.get("similar_to_content_id"),
+        )
+
+        return jsonify({"recommendations": results}), 200
+
+    @app.post("/recommend/adaptive")
+    def get_adaptive_recommendations():
+        """
+        Get recommendations personalised to the learner's current learning mode,
+        predicted from their recent in-session action sequence.
+
+        Expected JSON body:
+        {
+            "learner_id": "1",
+            "learner_name": "Jane Doe",           // optional
+            "interactions": [...],                 // optional – same format as /recommend
+            "recent_actions": [["enter","q"], ["play_video","l"], ...],  // required
+            "top_n": 5,                            // optional, default 10
+            "triggered_resource": false,           // optional
+            "trigger_content_id": "11"             // optional – required when triggered_resource=true
+        }
+        """
+        payload = request.get_json(silent=True) or {}
+
+        if "learner_id" not in payload:
+            return jsonify({"error": "learner_id is required"}), 400
+
+        recent_actions = payload.get("recent_actions")
+        if not recent_actions:
+            return jsonify({"error": "recent_actions is required"}), 400
+
+        profile = build_learner_model(payload)
+
+        recommendations, predicted_mode = adaptive_recommender.recommend(
+            profile=profile,
+            recent_actions=recent_actions,
+            top_n=int(payload.get("top_n", 10)),
+            triggered_resource=bool(payload.get("triggered_resource", False)),
+            trigger_content_id=payload.get("trigger_content_id"),
+        )
+
+        return jsonify({
+            "recommendations": recommendations,
+            "predicted_mode": predicted_mode,
+        }), 200
     
 

@@ -1,0 +1,338 @@
+{
+  "Style0_Perf0_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 350,
+    "Percentage": "2.5%"
+  },
+  "Style0_Perf0_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Highly Engaged",
+    "Count": 560,
+    "Percentage": "4.0%"
+  },
+  "Style0_Perf0_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 331,
+    "Percentage": "2.4%"
+  },
+  "Style0_Perf1_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 404,
+    "Percentage": "2.9%"
+  },
+  "Style0_Perf1_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Highly Engaged",
+    "Count": 410,
+    "Percentage": "2.9%"
+  },
+  "Style0_Perf1_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 318,
+    "Percentage": "2.3%"
+  },
+  "Style0_Perf2_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 332,
+    "Percentage": "2.4%"
+  },
+  "Style0_Perf2_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Highly Engaged",
+    "Count": 413,
+    "Percentage": "2.9%"
+  },
+  "Style0_Perf2_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 327,
+    "Percentage": "2.3%"
+  },
+  "Style0_Perf3_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 282,
+    "Percentage": "2.0%"
+  },
+  "Style0_Perf3_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Highly Engaged",
+    "Count": 420,
+    "Percentage": "3.0%"
+  },
+  "Style0_Perf3_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 270,
+    "Percentage": "1.9%"
+  },
+  "Style1_Perf0_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 202,
+    "Percentage": "1.4%"
+  },
+  "Style1_Perf0_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Highly Engaged",
+    "Count": 289,
+    "Percentage": "2.1%"
+  },
+  "Style1_Perf0_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 198,
+    "Percentage": "1.4%"
+  },
+  "Style1_Perf1_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 233,
+    "Percentage": "1.7%"
+  },
+  "Style1_Perf1_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Highly Engaged",
+    "Count": 284,
+    "Percentage": "2.0%"
+  },
+  "Style1_Perf1_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 208,
+    "Percentage": "1.5%"
+  },
+  "Style1_Perf2_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 200,
+    "Percentage": "1.4%"
+  },
+  "Style1_Perf2_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Highly Engaged",
+    "Count": 255,
+    "Percentage": "1.8%"
+  },
+  "Style1_Perf2_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 164,
+    "Percentage": "1.2%"
+  },
+  "Style1_Perf3_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 206,
+    "Percentage": "1.5%"
+  },
+  "Style1_Perf3_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Highly Engaged",
+    "Count": 308,
+    "Percentage": "2.2%"
+  },
+  "Style1_Perf3_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 152,
+    "Percentage": "1.1%"
+  },
+  "Style2_Perf0_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 191,
+    "Percentage": "1.4%"
+  },
+  "Style2_Perf0_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Highly Engaged",
+    "Count": 216,
+    "Percentage": "1.5%"
+  },
+  "Style2_Perf0_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 160,
+    "Percentage": "1.1%"
+  },
+  "Style2_Perf1_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 153,
+    "Percentage": "1.1%"
+  },
+  "Style2_Perf1_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Highly Engaged",
+    "Count": 264,
+    "Percentage": "1.9%"
+  },
+  "Style2_Perf1_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 126,
+    "Percentage": "0.9%"
+  },
+  "Style2_Perf2_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 176,
+    "Percentage": "1.3%"
+  },
+  "Style2_Perf2_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Highly Engaged",
+    "Count": 199,
+    "Percentage": "1.4%"
+  },
+  "Style2_Perf2_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 138,
+    "Percentage": "1.0%"
+  },
+  "Style2_Perf3_Eng0": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 172,
+    "Percentage": "1.2%"
+  },
+  "Style2_Perf3_Eng1": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Highly Engaged",
+    "Count": 208,
+    "Percentage": "1.5%"
+  },
+  "Style2_Perf3_Eng2": {
+    "LearningStyle": "Traditional Learner",
+    "Performance": "High Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 180,
+    "Percentage": "1.3%"
+  },
+  "Style3_Perf0_Eng0": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 326,
+    "Percentage": "2.3%"
+  },
+  "Style3_Perf0_Eng1": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Highly Engaged",
+    "Count": 481,
+    "Percentage": "3.4%"
+  },
+  "Style3_Perf0_Eng2": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 378,
+    "Percentage": "2.7%"
+  },
+  "Style3_Perf1_Eng0": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 341,
+    "Percentage": "2.4%"
+  },
+  "Style3_Perf1_Eng1": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Highly Engaged",
+    "Count": 541,
+    "Percentage": "3.9%"
+  },
+  "Style3_Perf1_Eng2": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Moderate Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 307,
+    "Percentage": "2.2%"
+  },
+  "Style3_Perf2_Eng0": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 388,
+    "Percentage": "2.8%"
+  },
+  "Style3_Perf2_Eng1": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Highly Engaged",
+    "Count": 479,
+    "Percentage": "3.4%"
+  },
+  "Style3_Perf2_Eng2": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "Struggling Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 334,
+    "Percentage": "2.4%"
+  },
+  "Style3_Perf3_Eng0": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "High Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 322,
+    "Percentage": "2.3%"
+  },
+  "Style3_Perf3_Eng1": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "High Performer",
+    "Affective": "Highly Engaged",
+    "Count": 486,
+    "Percentage": "3.5%"
+  },
+  "Style3_Perf3_Eng2": {
+    "LearningStyle": "Digital Self-Learner",
+    "Performance": "High Performer",
+    "Affective": "Moderately Engaged",
+    "Count": 321,
+    "Percentage": "2.3%"
+  }
+}

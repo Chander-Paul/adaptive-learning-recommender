@@ -49,7 +49,8 @@ class ResourceRecommender:
     
     def __init__(
         self,
-        resources_path: str = "data/resources.csv",
+        resources_path: str = "data/resources_with_bertopic.csv",
+        topics_path: str = "data/berttopic_topics.csv",
         embeddings_mapping_path: str = "embeddings/all-MiniLM-L6-v2_resources.csv_embeddings_mapping.npy",
 
     ) -> None:
@@ -101,8 +102,10 @@ class ResourceRecommender:
             query_embedding = content.encode_text(query)
         elif similar_to_content_id:
             ## Encoding based on specific content item. Could be used for "more like this" type recommendations.
-            similar_row = self.resources[self.resources["id"] == similar_to_content_id]
+            similar_row = self.resources[self.resources["id"] == int(similar_to_content_id)]
+            print("Similar Row:", similar_row)
             if not similar_row.empty:
+                print("Found similar content for ID:", similar_row.iloc[0])
                 query_embedding = content.get_resource_embedding(similar_row.iloc[0])
         elif profile and profile.learner_embeddings is not None:
             ## Encoding based on user profile embedding from engaged content.
@@ -161,13 +164,12 @@ class ResourceRecommender:
 
         ## Rerank recommendations based on user engagement.
         if self.ENABLE_ENGAGEMENT_RERANKING:
-            rerank_scored = self.rerank(candidates, profile, top_k=self.RERANK_TOP_K)
+            rerank_scored = self.rerank(candidates, profile, top_k=top_n, content=content)
         else:
             rerank_scored = candidates
         
         
-        print("Reranked scored candidates:")
-        # print(rerank_scored)
+        print("Reranked scored candidates:" , len(rerank_scored))
         results = []
         
         for _, row in rerank_scored.iterrows():
@@ -189,8 +191,25 @@ class ResourceRecommender:
                 }
             )
         return results
-
     
+    def get_user_topic_mvl_elo_readiness(self, profile: Any, topic: str) -> float:
+        """
+        Get a user's Multi-Variate ELO score for a given topic based on their skill mastery levels and the topic's prerequisites.
+        """
+        
+        topic_resources = profile.get_all_resources_in_topic(topic)
+        topic_mvl_score = len(topic_resources) *500
+
+        return self.cosine_similarity(profile.learner_embeddings, topic_embedding)
+    
+  
+
+    def get_all_resources_in_topic(self, topic: str) -> pd.DataFrame:
+        """
+        Get all resources related to a specific topic.
+        """
+        return self.resources[self.resources["predicted_topic"] == topic]
+
     def apply_preferences(self, resources: pd.DataFrame, profile: dict[str, Any]) -> pd.DataFrame:
         """
         Apply user preferences generated from the learning mode clustering model.
@@ -264,56 +283,57 @@ class ResourceRecommender:
         candidates: list[tuple[float, pd.Series]],
         profile: Any,    
         top_k: int,
+        content: ContentModel = None,
     ) -> list[tuple[float, pd.Series]]:
 
 
         
 
-        top_k = max(top_k, 1)
+
         if top_k <= 1 or len(candidates)<= 1:
             return candidates   
         engaged_content = profile.get_engaged_content()
-        if not engaged_content:
-            return candidates
+        #if not engaged_content:
+        #    return candidates
         head = candidates[:top_k]
-        tail = candidates[top_k:]
+        tail = candidates[len(candidates)-top_k:]
 
         reranked = []
         ## Add scoring based on similarity to engaged content
-        for base_score, row in head:
-            sim = self.user_content_similarity(row, profile)
+
+        for idx, row in head.iterrows():
+            base_score = float(row["score"]) if pd.notna(row.get("score")) else 0.0
+            sim = self.user_content_similarity(row, profile, content)
             
             reranked_score = base_score + (sim * self.RERANK_SIM_WEIGHT)
-            print(reranked_score)
-            row["score"] = row["score"]+reranked_score
-            reranked.append((reranked_score, row))
 
-        reranked.sort(key=lambda x: (x[0], self.safe_date(x[1])), reverse=True)
+            head.loc[idx, "score"] = reranked_score
+            reranked.append((reranked_score, head.loc[[idx]]))
+        
+        ## Rerank based on learner MVL Elo score
+        
 
-        return reranked + tail
+
+        reranked.sort(key=lambda x: (x[0], self.safe_date(x[1].iloc[0])), reverse=True)
+        top_rows = pd.concat([r for _, r in reranked[:top_k]])
+        print("Reranked top candidates:" , len(top_rows))
+
+        return top_rows
     
 
 
 
-    def user_content_similarity(self, resource: pd.Series, profile: Any) -> float:
+    def user_content_similarity(self, resource: pd.Series, profile: Any, content: Any) -> float:
 
-
-        resource_embedding = self.get_resource_embedding(resource)
+        resource_embedding = content.get_resource_embedding(resource)
         if resource_embedding is None:
+            return 0.0
+        if profile.learner_embeddings is None:
             return 0.0
         return self.cosine_similarity(profile.learner_embeddings, resource_embedding)
 
 
 
-    def get_resource_embedding(self, resource: pd.Series) -> Optional[np.ndarray]:
-        resource_id = resource.get("id")
-        if pd.isna(resource_id):
-            return None
-        try:
-            resource_id = int(resource_id)
-        except Exception:
-            return None
-        return self.resource_embeddings.get(resource_id)
 
 
 
@@ -338,27 +358,7 @@ class ResourceRecommender:
 
         self.resource_embeddings = embeddings
 
-    def ensure_topic_embeddings(self) -> None:
-        if self.topic_embeddings is not None:
-            return
-
-        self.topic_embeddings = {}
-        if not self.resource_embeddings:
-            return
-
-        grouped = {}
-        for _, row in self.resources.iterrows():
-            topic = row.get("topic_name")
-            if pd.isna(topic):
-                continue
-            embedding = self.get_resource_embedding(row)
-            if embedding is None:
-                continue
-            grouped.setdefault(str(topic), []).append(embedding)
-
-        for topic, vectors in grouped.items():
-            self.topic_embeddings[topic] = np.mean(np.stack(vectors, axis=0), axis=0)
-
+   
     @staticmethod
     def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
         denom = (np.linalg.norm(a) * np.linalg.norm(b))

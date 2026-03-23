@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Learning Recommendations</title>
+  <style>
+    :root {
+      --bg-1: #f0f4f8;
+      --bg-2: #e3edf3;
+      --ink: #102a43;
+      --muted: #486581;
+      --panel: #ffffff;
+      --accent: #0f766e;
+      --accent-2: #f59e0b;
+      --border: #d9e2ec;
+      --danger: #b42318;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 10%, #ffffff 0, #ffffff66 22%, transparent 55%),
+        radial-gradient(circle at 80% 5%, #fde68a80 0, #fde68a22 25%, transparent 60%),
+        linear-gradient(165deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+
+    .hero {
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 2.7vw, 2.3rem);
+      letter-spacing: 0.2px;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      grid-column: span 12;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 4px 18px rgba(16, 42, 67, 0.06);
+      animation: in 240ms ease-out;
+    }
+
+    @keyframes in {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 1.12rem;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px 11px;
+      font-size: 0.93rem;
+      font-family: inherit;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85rem;
+      line-height: 1.35;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      letter-spacing: 0.15px;
+      cursor: pointer;
+      color: #fff;
+      background: var(--accent);
+    }
+
+    button.secondary {
+      background: var(--accent-2);
+      color: #111;
+    }
+
+    .muted { color: var(--muted); }
+
+    .help {
+      margin: 6px 0 0;
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .status {
+      margin-top: 8px;
+      min-height: 1.3rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .status.error { color: var(--danger); }
+
+    pre {
+      margin: 10px 0 0;
+      padding: 12px;
+      border-radius: 10px;
+      background: #0b1f33;
+      color: #d9e2ec;
+      overflow: auto;
+      font-size: 0.8rem;
+      line-height: 1.38;
+      min-height: 140px;
+    }
+
+    @media (min-width: 960px) {
+      .card.recommend { grid-column: span 6; }
+      .card.adaptive { grid-column: span 6; }
+      .card.output { grid-column: span 12; }
+    }
+
+    .response-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      justify-content: flex-end;
+    }
+
+    .response-controls button {
+      padding: 8px 12px;
+      font-size: 0.85rem;
+    }
+
+    .response-controls button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .response-controls button:not(.active) {
+      background: var(--border);
+      color: var(--ink);
+    }
+
+    .recommendations-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .recommendation-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      background: #fafbfc;
+    }
+
+    .recommendation-item h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    .rec-field {
+      margin: 6px 0;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 8px;
+    }
+
+    .rec-label {
+      font-weight: 600;
+      color: var(--muted);
+      min-width: 80px;
+    }
+
+    .rec-value {
+      color: var(--ink);
+      word-break: break-word;
+    }
+
+    .rec-value a {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .rec-score {
+      display: inline-block;
+      background: var(--accent-2);
+      color: #111;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .predicted-mode {
+      margin-top: 12px;
+      padding: 10px;
+      background: #e0f2fe;
+      border-radius: 8px;
+      border-left: 4px solid var(--accent);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 740px) {
+      .two { grid-template-columns: 1fr; }
+      .wrap { padding: 18px 12px 26px; }
+      .rec-field { flex-direction: column; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <h1>Learning Resource Recommender</h1>
+      <p>Use this page to test recommendations and adaptive recommendations from your API.</p>
+    </header>
+
+    <section class="grid">
+      <article class="card recommend">
+        <h2>Standard Recommendations</h2>
+        <p class="help">Use this when you want suggested resources from learner history, optional search text, and optional filters.</p>
+        <div class="two">
+          <div>
+            <label for="recLearnerId">Learner ID</label>
+            <input id="recLearnerId" value="1">
+          </div>
+          <div>
+            <label for="recLearnerName">Learner Name</label>
+            <input id="recLearnerName" value="Jane Doe">
+          </div>
+        </div>
+
+        <div class="two" style="margin-top:10px">
+          <div>
+            <label for="recTopN">Number of Results</label>
+            <input id="recTopN" type="number" value="5" min="1">
+          </div>
+          <div>
+            <label for="recQuery">Search Text (optional)</label>
+            <input id="recQuery" placeholder="Example: graph neural networks">
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label for="recInteractions">Learning History (JSON list)</label>
+          <p class="help">Leave as-is to use the sample format from your tests.</p>
+          <textarea id="recInteractions">[
+  {"content_id":"11","topic_id":"1","timestamp":"2024-01-01T10:00:00Z","duration_seconds":300,"feedback":4,"completed":false},
+  {"content_id":"10","topic_id":"1","timestamp":"2024-01-01T10:05:00Z","duration_seconds":300,"feedback":4,"completed":false},
+  {"content_id":"12","topic_id":"1","timestamp":"2024-01-01T10:10:00Z","duration_seconds":300,"feedback":4,"completed":false}
+]</textarea>
+        </div>
+
+        <div style="margin-top:10px">
+          <label for="recFilters">Filters (JSON list, optional)</label>
+          <p class="help">Example: [{"key":"type","value":"resource"}]</p>
+          <textarea id="recFilters">[{"key":"type","value":"resource"}]</textarea>
+        </div>
+
+        <div class="actions">
+          <button id="sendRecommend">Get Recommendations</button>
+          <button class="secondary" id="resetRecommend">Reset Standard Form</button>
+        </div>
+        <div id="recommendStatus" class="status"></div>
+      </article>
+
+      <article class="card adaptive">
+        <h2>Adaptive Recommendations</h2>
+        <p class="help">Use this when you also want the system to infer learning mode from recent actions.</p>
+        <div class="two">
+          <div>
+            <label for="adLearnerId">Learner ID</label>
+            <input id="adLearnerId" value="1">
+          </div>
+          <div>
+            <label for="adTopN">Number of Results</label>
+            <input id="adTopN" type="number" value="5" min="1">
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label for="adInteractions">Learning History (JSON list)</label>
+          <textarea id="adInteractions">[
+  {"content_id":"11","topic_id":"1","timestamp":"2024-01-01T10:00:00Z","duration_seconds":300,"feedback":4,"completed":false}
+]</textarea>
+        </div>
+
+        <div style="margin-top:10px">
+          <label for="adActions">Recent Actions (JSON list, required)</label>
+          <p class="help">This sequence drives adaptive mode prediction.</p>
+          <textarea id="adActions">[["enter","q"],["play_audio","l"],["respond","q"],["submit","q"],["enter","l"],["play_video","l"],["pause_video","l"],["play_video","l"]]</textarea>
+        </div>
+
+        <div class="two" style="margin-top:10px">
+          <div>
+            <label for="adTriggered">Use Triggered Resource?</label>
+            <input id="adTriggered" placeholder="Type true or false" value="false">
+          </div>
+          <div>
+            <label for="adTriggerId">Triggered Content ID (optional)</label>
+            <input id="adTriggerId" placeholder="11">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="sendAdaptive">Get Adaptive Recommendations</button>
+          <button class="secondary" id="resetAdaptive">Reset Adaptive Form</button>
+        </div>
+        <div id="adaptiveStatus" class="status"></div>
+      </article>
+
+      <article class="card output">
+        <h2>API Response</h2>
+        <div class="response-controls">
+          <button id="viewListBtn" class="active">List View</button>
+          <button id="viewJsonBtn">JSON View</button>
+        </div>
+        <div id="responsePaneList" class="recommendations-list" style="display: block;"></div>
+        <pre id="responsePane" style="display: none;"></pre>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    // Initialize response pane with default message
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("responsePaneList").innerHTML = "<p style='color: var(--muted); text-align: center; padding: 40px 0;'>Results will appear here</p>";
+      document.getElementById("responsePane").textContent = "{ \"status\": \"ready\" }";
+      
+      // Toggle view buttons
+      document.getElementById("viewListBtn").addEventListener("click", function() {
+        this.classList.add("active");
+        document.getElementById("viewJsonBtn").classList.remove("active");
+        document.getElementById("responsePaneList").style.display = "block";
+        document.getElementById("responsePane").style.display = "none";
+      });
+      
+      document.getElementById("viewJsonBtn").addEventListener("click", function() {
+        this.classList.add("active");
+        document.getElementById("viewListBtn").classList.remove("active");
+        document.getElementById("responsePaneList").style.display = "none";
+        document.getElementById("responsePane").style.display = "block";
+      });
+    });
+
+    function parseJsonField(fieldId, fallback, allowEmpty) {
+      const text = document.getElementById(fieldId).value.trim();
+      if (!text && allowEmpty) return fallback;
+      if (!text && !allowEmpty) throw new Error(fieldId + " cannot be empty");
+      return JSON.parse(text);
+    }
+
+    function setStatus(id, text, isError) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = isError ? "status error" : "status";
+    }
+
+    function formatJsonWithLinks(obj, indent = 0) {
+      const indentStr = "  ".repeat(indent);
+      const nextIndentStr = "  ".repeat(indent + 1);
+      
+      if (obj === null) return "null";
+      if (typeof obj === "boolean") return obj ? "true" : "false";
+      if (typeof obj === "number") return String(obj);
+      
+      if (typeof obj === "string") {
+        // Check if it looks like a URL
+        if (obj.startsWith("http://") || obj.startsWith("https://")) {
+          return `<a href="${obj}" target="_blank" style="color: #60a5fa; text-decoration: underline;">${obj}</a>`;
+        }
+        return `"${obj.replace(/"/g, '\\"')}"`;
+      }
+      
+      if (Array.isArray(obj)) {
+        if (obj.length === 0) return "[]";
+        const items = obj.map((item, i) => {
+          const formatted = formatJsonWithLinks(item, indent + 1);
+          return `${nextIndentStr}${formatted}`;
+        }).join(",\n");
+        return `[\n${items}\n${indentStr}]`;
+      }
+      
+      if (typeof obj === "object") {
+        const keys = Object.keys(obj);
+        if (keys.length === 0) return "{}";
+        const items = keys.map(key => {
+          const value = formatJsonWithLinks(obj[key], indent + 1);
+          return `${nextIndentStr}"${key}": ${value}`;
+        }).join(",\n");
+        return `{\n${items}\n${indentStr}}`;
+      }
+      
+      return String(obj);
+    }
+
+    function formatRecommendationsAsCards(data) {
+      let html = "";
+      
+      // Show predicted mode if present (adaptive recommendations)
+      if (data.predicted_mode) {
+        html += `<div class="predicted-mode"><strong>Predicted Learning Mode:</strong> ${data.predicted_mode}</div>`;
+      }
+      
+      const recommendations = data.recommendations || [];
+      if (!recommendations.length) {
+        return html + "<p style='padding: 20px; text-align: center; color: #666;'>No recommendations found</p>";
+      }
+      
+      html += "<div class='recommendations-list'>";
+      recommendations.forEach((rec, idx) => {
+        html += `<div class='recommendation-item'>
+          <h4 style='margin: 0 0 12px 0; color: #333;'>${idx + 1}. ${rec.title || '(No title)'}</h4>`;
+        
+        if (rec.url) {
+          html += `<div class='rec-field'><span class='rec-label'>Link:</span> <span class='rec-value'><a href="${rec.url}" target="_blank">${rec.url}</a></span></div>`;
+        }
+        if (rec.topic) {
+          html += `<div class='rec-field'><span class='rec-label'>Topic:</span> <span class='rec-value'>${rec.topic}</span></div>`;
+        }
+        if (rec.author) {
+          html += `<div class='rec-field'><span class='rec-label'>Author:</span> <span class='rec-value'>${rec.author}</span></div>`;
+        }
+        if (rec.medium) {
+          html += `<div class='rec-field'><span class='rec-label'>Type:</span> <span class='rec-value'>${rec.medium}</span></div>`;
+        }
+        if (rec.date) {
+          html += `<div class='rec-field'><span class='rec-label'>Date:</span> <span class='rec-value'>${rec.date}</span></div>`;
+        }
+        if (rec.score !== undefined) {
+          html += `<div class='rec-field'><span class='rec-label'>Score:</span> <span class='rec-value'><span class='rec-score'>${(rec.score * 100).toFixed(1)}%</span></span></div>`;
+        }
+        
+        html += "</div>";
+      });
+      html += "</div>";
+      
+      return html;
+    }
+
+    function setResponse(obj) {
+      const listPane = document.getElementById("responsePaneList");
+      const jsonPane = document.getElementById("responsePane");
+      
+      // Always show JSON in the JSON view
+      jsonPane.textContent = JSON.stringify(obj, null, 2);
+      
+      // Show formatted cards for recommendation responses
+      if (obj && obj.recommendations && Array.isArray(obj.recommendations)) {
+        listPane.innerHTML = formatRecommendationsAsCards(obj);
+      } else {
+        // Fallback to JSON display for non-recommendation responses (errors, etc)
+        listPane.innerHTML = "<pre style='margin: 0; white-space: pre-wrap; word-wrap: break-word;'>" + 
+                             JSON.stringify(obj, null, 2) + "</pre>";
+      }
+    }
+
+    async function postJson(url, payload, statusId) {
+      setStatus(statusId, "Sending your request...", false);
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setStatus(statusId, "Could not complete request (" + res.status + ")", true);
+          setResponse(data);
+          return;
+        }
+        setStatus(statusId, "Done. Recommendations loaded.", false);
+        setResponse(data);
+      } catch (err) {
+        setStatus(statusId, err.message || "Network error. Please try again.", true);
+      }
+    }
+
+    function booleanLike(value) {
+      return String(value || "").trim().toLowerCase() === "true";
+    }
+
+    document.getElementById("sendRecommend").addEventListener("click", async function () {
+      try {
+        const payload = {
+          learner_id: document.getElementById("recLearnerId").value.trim(),
+          learner_name: document.getElementById("recLearnerName").value.trim(),
+          top_n: Number(document.getElementById("recTopN").value || 10),
+          query: document.getElementById("recQuery").value.trim() || null,
+          interactions: parseJsonField("recInteractions", [], true),
+          filter: parseJsonField("recFilters", null, true)
+        };
+        await postJson("/recommend", payload, "recommendStatus");
+      } catch (err) {
+        setStatus("recommendStatus", "Please fix JSON format: " + err.message, true);
+      }
+    });
+
+    document.getElementById("sendAdaptive").addEventListener("click", async function () {
+      try {
+        const payload = {
+          learner_id: document.getElementById("adLearnerId").value.trim(),
+          top_n: Number(document.getElementById("adTopN").value || 10),
+          interactions: parseJsonField("adInteractions", [], true),
+          recent_actions: parseJsonField("adActions", [], false),
+          triggered_resource: booleanLike(document.getElementById("adTriggered").value),
+          trigger_content_id: document.getElementById("adTriggerId").value.trim() || null
+        };
+        await postJson("/recommend/adaptive", payload, "adaptiveStatus");
+      } catch (err) {
+        setStatus("adaptiveStatus", "Please fix JSON format: " + err.message, true);
+      }
+    });
+
+    document.getElementById("resetRecommend").addEventListener("click", function () {
+      document.getElementById("recLearnerId").value = "1";
+      document.getElementById("recLearnerName").value = "Jane Doe";
+      document.getElementById("recTopN").value = "5";
+      document.getElementById("recQuery").value = "";
+      setStatus("recommendStatus", "", false);
+    });
+
+    document.getElementById("resetAdaptive").addEventListener("click", function () {
+      document.getElementById("adLearnerId").value = "1";
+      document.getElementById("adTopN").value = "5";
+      document.getElementById("adTriggered").value = "false";
+      document.getElementById("adTriggerId").value = "";
+      setStatus("adaptiveStatus", "", false);
+    });
+  </script>
+</body>
+</html>
